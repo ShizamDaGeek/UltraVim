@@ -1,0 +1,1 @@
+Use 'make -b' to compile you shitty code
