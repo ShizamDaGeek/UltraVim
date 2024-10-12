@@ -19,8 +19,8 @@ void getConsoleSize();
 void hideCursor();
 void showCursor();
 void displayBuffer(char *buffer);
-void normalMode(char *buffer);
-void insertMode(char *buffer);
+void normalMode(char *buffer, const char *filename);
+void insertMode(char *buffer, const char *filename);
 
 int main(int argc, char *argv[]) 
 {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     // Check if a filename is provided
     if (argc < 2) 
     {
-        printf("Usage: uvim <filename>\n");
+        printf("Usage: UVim <filename>\n");
         return 1;
     }
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    normalMode(buffer);
+    normalMode(buffer, argv[1]);
 
     return 0;
 }
@@ -118,7 +118,7 @@ void displayBuffer(char *buffer)
 }
 
 // NORMAL MODE
-void normalMode(char *buffer)
+void normalMode(char *buffer, const char *filename)
 {
     // Hiding the cursor and display the file contents
     hideCursor();
@@ -130,28 +130,95 @@ void normalMode(char *buffer)
     {
         // If user pressed 'i' the, will be put in insert mode
         printf("--- Press 'i' to enter insert mode ---\n");
+        // If user pressed 'q' the program will quit
+        printf("--- Press 'q' to enter insert mode ---\n");
         
-        char editModeInput = _getch(    );
+        char editModeInput;
         scanf(" %c", &editModeInput);
         if (editModeInput == 'i')
         {
             // Takes user to insert mode and shows cursor again
             showCursor();
-            insertMode(buffer);
+            insertMode(buffer, filename);
             break;
         }
-        else
+        if (editModeInput == 'q')
         {
-            printf("Please enter 'i' to go to insert mode\n");
+            system("cls");
+            break;
         }
     }
 }
 
 // EDIT LOOP
-void insertMode(char *buffer)
+void insertMode(char *buffer, const char *filename)
 {
-    system("cls");
+    // Start editing from the end of the buffer
+    int cursor = strlen(buffer);
+    int ch;
 
-    displayBuffer(buffer);
+    boolean isEditing = TRUE;
+    while (isEditing)
+    {
+        // clear screen, display file contents and show cursor
+        system("cls");
+        displayBuffer(buffer);
+        showCursor();
 
+        // Show instructions to go back to insert mode
+        printf("\n--- INSERT MODE --- Press ESC to return to normal mode ---\n");
+
+        // Capture user input
+        char ch = _getch();
+
+        // If 'ESC' key to return to normal mode
+        if (ch == 27)
+        {
+             // Save the file contents before exiting insert mode
+            if (saveFile(filename, buffer) == 0)
+            {
+                printf("\nFile saved successfully.\n");
+            }
+            else
+            {
+                printf("\nError saving file.\n");
+            }
+
+            // Hide cursor and exit to insert mode
+            hideCursor();
+            break;
+        }
+        // 'Backspace' key
+        else if (ch == '\b')
+        {
+            if (cursor > 0)
+            {
+                buffer[cursor - 1] = '\0';  // Remove last character
+                cursor--;
+            }
+        }
+        // 'Enter' key
+        else if (ch == '\r')
+        {
+            if (cursor < MAX_BUFFER - 1)
+            {
+                // Adds newline
+                buffer[cursor] = '\n';
+                cursor++;
+            }
+        }
+        else
+        {
+            // Add the input character to the buffer
+            if (cursor < MAX_BUFFER - 1)
+            {
+                buffer[cursor] = ch;
+                cursor++;
+                buffer[cursor] = '\0';  // Ensure null-termination of the string
+            }
+        }
+    }
+    
+    // Return to normal mode after done editing
+    normalMode(buffer, filename);
 }
