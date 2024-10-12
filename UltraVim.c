@@ -18,8 +18,9 @@ int saveFile(const char *filename, char *buffer);
 void getConsoleSize();
 void hideCursor();
 void showCursor();
+void displayBuffer(char *buffer);
 void normalMode(char *buffer);
-void insertMode();
+void insertMode(char *buffer);
 
 int main(int argc, char *argv[]) 
 {
@@ -108,14 +109,20 @@ void showCursor()
     SetConsoleCursorInfo(consoleHandle, &info);
 }
 
+// DISPLAY BUFFER
+void displayBuffer(char *buffer)
+{
+    // Clear the console and display the file contents
+    system("cls");
+    printf("--- File Contents ---\n%s\n", buffer);
+}
+
 // NORMAL MODE
 void normalMode(char *buffer)
 {
-    // Hiding the cursor when in normal mode
+    // Hiding the cursor and display the file contents
     hideCursor();
-
-    // Display the file contents
-    printf("--- File Contents ---\n%s\n", buffer);
+    displayBuffer(buffer);
 
     // Loop to keep checking for key presses
     boolean isRunning = TRUE;
@@ -124,14 +131,13 @@ void normalMode(char *buffer)
         // If user pressed 'i' the, will be put in insert mode
         printf("--- Press 'i' to enter insert mode ---\n");
         
-        char editModeInput;
-        
+        char editModeInput = _getch(    );
         scanf(" %c", &editModeInput);
         if (editModeInput == 'i')
         {
             // Takes user to insert mode and shows cursor again
             showCursor();
-            insertMode();
+            insertMode(buffer);
             break;
         }
         else
@@ -142,9 +148,10 @@ void normalMode(char *buffer)
 }
 
 // EDIT LOOP
-void insertMode()
+void insertMode(char *buffer)
 {
     system("cls");
 
+    displayBuffer(buffer);
 
 }
