@@ -1,8 +1,10 @@
+// Includes
 #include <windows.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <conio.h>
 
+// Define
 #define MAX_BUFFER 1024
 
 /*
@@ -105,7 +107,7 @@ void showCursor()
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO info;
     info.dwSize = 100;
-    info.bVisible = FALSE;
+    info.bVisible = TRUE;
     SetConsoleCursorInfo(consoleHandle, &info);
 }
 
@@ -113,7 +115,6 @@ void showCursor()
 void displayBuffer(char *buffer)
 {
     // Clear the console and display the file contents
-    system("cls");
     printf("--- File Contents ---\n%s\n", buffer);
 }
 
@@ -155,7 +156,7 @@ void insertMode(char *buffer, const char *filename)
 {
     // Start editing from the end of the buffer
     int cursor = strlen(buffer);
-    int ch;
+    COORD cursorPos = {0, 0};
 
     boolean isEditing = TRUE;
     while (isEditing)
@@ -163,6 +164,7 @@ void insertMode(char *buffer, const char *filename)
         // clear screen, display file contents and show cursor
         system("cls");
         displayBuffer(buffer);
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPos);
         showCursor();
 
         // Show instructions to go back to insert mode
@@ -187,6 +189,26 @@ void insertMode(char *buffer, const char *filename)
             // Hide cursor and exit to insert mode
             hideCursor();
             break;
+        }
+        // Arrow keys handling
+        else if (ch == 0 || ch == 224)
+        {
+            ch = _getch(); // Get the actual arrow key code
+            switch (ch)
+            {
+                case 72: // Up arrow
+                    if (cursorPos.Y > 0) cursorPos.Y--;
+                    break;
+                case 80: // Down arrow
+                    cursorPos.Y++;
+                    break;
+                case 75: // Left arrow
+                    if (cursorPos.X > 0) cursorPos.X--;
+                    break;
+                case 77: // Right arrow
+                    cursorPos.X++;
+                    break;
+            }
         }
         // 'Backspace' key
         else if (ch == '\b')
