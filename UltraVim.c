@@ -1,11 +1,4 @@
-// Includes
-#include <windows.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <conio.h>
-
-// Define
-#define MAX_BUFFER 1024
+#include "includes/libs.h"
 
 /*
     *----------------------------------------------------*
@@ -20,7 +13,7 @@ int saveFile(const char *filename, char *buffer);
 void getConsoleSize();
 void hideCursor();
 void showCursor();
-void displayBuffer(char *buffer);
+void displayBuffer(const char *buffer, const char *filename);
 void normalMode(char *buffer, const char *filename);
 void insertMode(char *buffer, const char *filename);
 
@@ -112,27 +105,29 @@ void showCursor()
 }
 
 // DISPLAY BUFFER
-void displayBuffer(char *buffer)
+void displayBuffer(const char *buffer, const char *filename)
 {
-    // Clear the console and display the file contents
-    printf("--- File Contents ---\n%s\n", buffer);
+    // Clear the console and display the version of UltraVim and the file name
+    printf("UltraVim 0.1 - %s\n\n", filename);
+
+    // Display the file contents
+    printf("%s\n", buffer);
 }
 
 // NORMAL MODE
 void normalMode(char *buffer, const char *filename)
 {
-    // Hiding the cursor and display the file contents
-    hideCursor();
-    displayBuffer(buffer);
-
     // Loop to keep checking for key presses
     boolean isRunning = TRUE;
     while (isRunning) 
     {
-        // If user pressed 'i' the, will be put in insert mode
-        printf("--- Press 'i' to enter insert mode ---\n");
-        // If user pressed 'q' the program will quit
-        printf("--- Press 'q' to enter insert mode ---\n");
+        // Clear console, hiding the cursor, show the version of UltraVim and the file name
+        system("cls");
+        hideCursor();
+        displayBuffer(buffer, filename);
+
+        // Show all instructions to the user
+        printf("\ni = INSERT, q = QUIT\n");
         
         char editModeInput;
         scanf(" %c", &editModeInput);
@@ -143,7 +138,7 @@ void normalMode(char *buffer, const char *filename)
             insertMode(buffer, filename);
             break;
         }
-        if (editModeInput == 'q')
+        else if (editModeInput == 'q')
         {
             system("cls");
             break;
@@ -154,21 +149,27 @@ void normalMode(char *buffer, const char *filename)
 // EDIT LOOP
 void insertMode(char *buffer, const char *filename)
 {
-    // Start editing from the end of the buffer
+    // Init cursor
     int cursor = strlen(buffer);
     COORD cursorPos = {0, 0};
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 
     boolean isEditing = TRUE;
     while (isEditing)
     {
         // clear screen, display file contents and show cursor
         system("cls");
-        displayBuffer(buffer);
-        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPos);
         showCursor();
+        displayBuffer(buffer, filename);
 
-        // Show instructions to go back to insert mode
-        printf("\n--- INSERT MODE --- Press ESC to return to normal mode ---\n");
+        // Show all instruction to the user
+        printf("\n'esc' = NORMAL MODE\n");
+
+        // Move the cursor to the current cursorPos
+        SetConsoleCursorPosition(console, cursorPos);
+
+        // Show user what mode they are on
+        printf("\n--- INSERT MODE ---\n");
 
         // Capture user input
         char ch = _getch();
@@ -176,7 +177,7 @@ void insertMode(char *buffer, const char *filename)
         // If 'ESC' key to return to normal mode
         if (ch == 27)
         {
-             // Save the file contents before exiting insert mode
+            // Save the file contents before exiting insert mode
             if (saveFile(filename, buffer) == 0)
             {
                 printf("\nFile saved successfully.\n");
@@ -193,7 +194,8 @@ void insertMode(char *buffer, const char *filename)
         // Arrow keys handling
         else if (ch == 0 || ch == 224)
         {
-            ch = _getch(); // Get the actual arrow key code
+            // Get the actual key code
+            ch = _getch();
             switch (ch)
             {
                 case 72: // Up arrow
@@ -236,7 +238,7 @@ void insertMode(char *buffer, const char *filename)
             {
                 buffer[cursor] = ch;
                 cursor++;
-                buffer[cursor] = '\0';  // Ensure null-termination of the string
+                buffer[cursor] = '\0';
             }
         }
     }
