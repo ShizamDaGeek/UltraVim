@@ -11,10 +11,7 @@
 int loadFile(const char *filename, char *buffer);
 int saveFile(const char *filename, char *buffer);
 void getConsoleSize();
-void hideCursor();
-void showCursor();
 void displayBuffer(const char *buffer, const char *filename);
-void normalMode(char *buffer, const char *filename);
 void insertMode(char *buffer, const char *filename);
 
 int main(int argc, char *argv[]) 
@@ -35,7 +32,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    normalMode(buffer, argv[1]);
+    insertMode(buffer, argv[1]);
 
     return 0;
 }
@@ -82,28 +79,6 @@ void getConsoleSize()
     printf("rows: %d\n", rows);
 }
 
-// HIDE CURSOR
-void hideCursor()
-{
-    // Hides cursor
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO info;
-    info.dwSize = 100;  
-    info.bVisible = FALSE;
-    SetConsoleCursorInfo(consoleHandle, &info);
-}
-
-// SHOW CURSOR
-void showCursor()
-{
-    // Shows cursor
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO info;
-    info.dwSize = 100;
-    info.bVisible = TRUE;
-    SetConsoleCursorInfo(consoleHandle, &info);
-}
-
 // DISPLAY BUFFER
 void displayBuffer(const char *buffer, const char *filename)
 {
@@ -112,38 +87,6 @@ void displayBuffer(const char *buffer, const char *filename)
 
     // Display the file contents
     printf("%s\n", buffer);
-}
-
-// NORMAL MODE
-void normalMode(char *buffer, const char *filename)
-{
-    // Loop to keep checking for key presses
-    boolean isRunning = TRUE;
-    while (isRunning) 
-    {
-        // Clear console, hiding the cursor, show the version of UltraVim and the file name
-        system("cls");
-        hideCursor();
-        displayBuffer(buffer, filename);
-
-        // Show all instructions to the user
-        printf("\ni = INSERT, q = QUIT\n");
-        
-        char editModeInput;
-        scanf(" %c", &editModeInput);
-        if (editModeInput == 'i')
-        {
-            // Takes user to insert mode and shows cursor again
-            showCursor();
-            insertMode(buffer, filename);
-            break;
-        }
-        else if (editModeInput == 'q')
-        {
-            system("cls");
-            break;
-        }
-    }
 }
 
 // EDIT LOOP
@@ -159,7 +102,6 @@ void insertMode(char *buffer, const char *filename)
     {
         // clear screen, display file contents and show cursor
         system("cls");
-        showCursor();
         displayBuffer(buffer, filename);
 
         // Show all instruction to the user
@@ -167,9 +109,6 @@ void insertMode(char *buffer, const char *filename)
 
         // Move the cursor to the current cursorPos
         SetConsoleCursorPosition(console, cursorPos);
-
-        // Show user what mode they are on
-        printf("\n--- INSERT MODE ---\n");
 
         // Capture user input
         char ch = _getch();
@@ -180,15 +119,13 @@ void insertMode(char *buffer, const char *filename)
             // Save the file contents before exiting insert mode
             if (saveFile(filename, buffer) == 0)
             {
+                system("cls");
                 printf("\nFile saved successfully.\n");
             }
             else
             {
                 printf("\nError saving file.\n");
             }
-
-            // Hide cursor and exit to insert mode
-            hideCursor();
             break;
         }
         // Arrow keys handling
@@ -242,7 +179,4 @@ void insertMode(char *buffer, const char *filename)
             }
         }
     }
-    
-    // Return to normal mode after done editing
-    normalMode(buffer, filename);
 }
