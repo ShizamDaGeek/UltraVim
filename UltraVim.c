@@ -75,8 +75,7 @@ void getConsoleSize()
     columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
   
-    printf("columns: %d\n", columns);
-    printf("rows: %d\n", rows);
+    printf("columns: %d\n", columns, "rows: %d\n", rows);
 }
 
 // DISPLAY BUFFER
@@ -105,7 +104,7 @@ void insertMode(char *buffer, const char *filename)
         displayBuffer(buffer, filename);
 
         // Show all instruction to the user
-        printf("\n'esc' = NORMAL MODE\n");
+        printf("\nesc = SAVE AND QUIT\n");
 
         // Move the cursor to the current cursorPos
         SetConsoleCursorPosition(console, cursorPos);
@@ -120,34 +119,13 @@ void insertMode(char *buffer, const char *filename)
             if (saveFile(filename, buffer) == 0)
             {
                 system("cls");
-                printf("\nFile saved successfully.\n");
             }
             else
             {
+                system("cls");
                 printf("\nError saving file.\n");
             }
             break;
-        }
-        // Arrow keys handling
-        else if (ch == 0 || ch == 224)
-        {
-            // Get the actual key code
-            ch = _getch();
-            switch (ch)
-            {
-                case 72: // Up arrow
-                    if (cursorPos.Y > 0) cursorPos.Y--;
-                    break;
-                case 80: // Down arrow
-                    cursorPos.Y++;
-                    break;
-                case 75: // Left arrow
-                    if (cursorPos.X > 0) cursorPos.X--;
-                    break;
-                case 77: // Right arrow
-                    cursorPos.X++;
-                    break;
-            }
         }
         // 'Backspace' key
         else if (ch == '\b')
