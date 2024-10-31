@@ -1,2 +1,2 @@
 all:
-	gcc -o UVim UltraVim.c -luser32
+	gcc UltraVim.c -o Uvim -luser32

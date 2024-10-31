@@ -10,8 +10,9 @@
 // Function declarations
 int loadFile(const char *filename, char *buffer);
 int saveFile(const char *filename, char *buffer);
-void getConsoleSize();
+void clearConsole();
 void displayBuffer(const char *buffer, const char *filename);
+void printAtBottom(HANDLE console, const char *message);
 void insertMode(char *buffer, const char *filename);
 
 int main(int argc, char *argv[]) 
@@ -65,17 +66,14 @@ int saveFile(const char *filename, char *buffer)
     return 0;
 }
 
-// GET CONSOLE SIZE
-void getConsoleSize()
+// CLEAR CONSOLE
+void clearConsole()
 {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    int columns, rows;
-  
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-  
-    printf("columns: %d\n", columns, "rows: %d\n", rows);
+    #ifdef _WIN32
+        system("cls");
+    #else
+        clearScreen();
+    #endif
 }
 
 // DISPLAY BUFFER
@@ -86,6 +84,24 @@ void displayBuffer(const char *buffer, const char *filename)
 
     // Display the file contents
     printf("%s\n", buffer);
+}
+
+// PRINT AT BOTTOM OF TERMINAL
+void printAtBottom(HANDLE console, const char *message)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(console, &csbi);
+    
+    // Calculate the position at the bottom
+    COORD bottomPos;
+    bottomPos.X = 0;
+    bottomPos.Y = csbi.srWindow.Bottom - 1; // Last row of the window
+
+    // Move the cursor to the bottom position
+    SetConsoleCursorPosition(console, bottomPos);
+
+    // Print the message
+    printf("%s", message);
 }
 
 // EDIT LOOP
@@ -100,11 +116,30 @@ void insertMode(char *buffer, const char *filename)
     while (isEditing)
     {
         // clear screen, display file contents and show cursor
-        system("cls");
+        clearConsole();
         displayBuffer(buffer, filename);
 
-        // Show all instruction to the user
-        printf("\nesc = SAVE AND QUIT\n");
+        // Print initial instruction at the bottom
+        printAtBottom(console, "esc = SAVE&QUIT | arrow-keys = MOVE CURSOR");
+
+        // Calculate the new cursor position
+        int row = 0, col = 0;
+        for (int i = 0; i < cursor; ++i)
+        {
+            if (buffer[i] == '\n')
+            {
+                row++;
+                col = 0; // Reset column after a newline
+            }
+            else
+            {
+                col++;
+            }
+        }
+        // Add an offset to the row for the instructions printed below the buffer
+        row += 2;
+        cursorPos.X = col;
+        cursorPos.Y = row;
 
         // Move the cursor to the current cursorPos
         SetConsoleCursorPosition(console, cursorPos);
@@ -118,12 +153,12 @@ void insertMode(char *buffer, const char *filename)
             // Save the file contents before exiting insert mode
             if (saveFile(filename, buffer) == 0)
             {
-                system("cls");
+                clearConsole();
             }
             else
             {
-                system("cls");
-                printf("\nError saving file.\n");
+                clearConsole();
+                printf("\nERROR WHEN SAVING THE FILE!\n");
             }
             break;
         }
@@ -132,7 +167,8 @@ void insertMode(char *buffer, const char *filename)
         {
             if (cursor > 0)
             {
-                buffer[cursor - 1] = '\0';  // Remove last character
+                // Shift buffer content left to remove the character
+                memmove(buffer + cursor - 1, buffer + cursor, strlen(buffer) - cursor + 1);
                 cursor--;
             }
         }
@@ -144,6 +180,7 @@ void insertMode(char *buffer, const char *filename)
                 // Adds newline
                 buffer[cursor] = '\n';
                 cursor++;
+                buffer[cursor] = '\0';
             }
         }
         else
@@ -151,9 +188,10 @@ void insertMode(char *buffer, const char *filename)
             // Add the input character to the buffer
             if (cursor < MAX_BUFFER - 1)
             {
+                // Shift buffer content right to make space for the new character
+                memmove(buffer + cursor + 1, buffer + cursor, strlen(buffer) - cursor + 1);
                 buffer[cursor] = ch;
                 cursor++;
-                buffer[cursor] = '\0';
             }
         }
     }
