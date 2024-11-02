@@ -146,7 +146,7 @@ void insertMode(char *buffer, const char *filename)
         // Capture user input
         char input = _getch();
 
-        // If 'ESC' key to return to normal mode
+        // 'Esc' Key
         if (input == 27)
         {
             // Save the file contents before exiting insert mode
