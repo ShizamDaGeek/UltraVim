@@ -80,7 +80,7 @@ void clearConsole()
 void displayBuffer(const char *buffer, const char *filename)
 {
     // Clear the console and display the version of UltraVim and the file name
-    printf("UltraVim 0.1 - %s\n\n", filename);
+    printf("UltraVim v_0.1 - %s\n\n", filename);
 
     // Display the file contents
     printf("%s\n", buffer);
@@ -136,8 +136,7 @@ void insertMode(char *buffer, const char *filename)
                 col++;
             }
         }
-        // Add an offset to the row for the instructions printed below the buffer
-        row += 2;
+        row += 2;  // Offset for header and instructions
         cursorPos.X = col;
         cursorPos.Y = row;
 
@@ -145,10 +144,10 @@ void insertMode(char *buffer, const char *filename)
         SetConsoleCursorPosition(console, cursorPos);
 
         // Capture user input
-        char ch = _getch();
+        char input = _getch();
 
         // If 'ESC' key to return to normal mode
-        if (ch == 27)
+        if (input == 27)
         {
             // Save the file contents before exiting insert mode
             if (saveFile(filename, buffer) == 0)
@@ -163,7 +162,7 @@ void insertMode(char *buffer, const char *filename)
             break;
         }
         // 'Backspace' key
-        else if (ch == '\b')
+        else if (input == '\b')
         {
             if (cursor > 0)
             {
@@ -173,7 +172,7 @@ void insertMode(char *buffer, const char *filename)
             }
         }
         // 'Enter' key
-        else if (ch == '\r')
+        else if (input == '\r')
         {
             if (cursor < MAX_BUFFER - 1)
             {
@@ -190,7 +189,7 @@ void insertMode(char *buffer, const char *filename)
             {
                 // Shift buffer content right to make space for the new character
                 memmove(buffer + cursor + 1, buffer + cursor, strlen(buffer) - cursor + 1);
-                buffer[cursor] = ch;
+                buffer[cursor] = input;
                 cursor++;
             }
         }
