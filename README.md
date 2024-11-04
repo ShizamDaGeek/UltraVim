@@ -1,4 +1,4 @@
-![Alt text]()
+![Alt text](https://github.com/ShizamDaGeek/UltraVim/blob/9e6b4cf670b2d6d1df7f171749878429124066cc/Images/UltraVim%20Logo.png)
 
 
                     *----------------------------------------------------*
