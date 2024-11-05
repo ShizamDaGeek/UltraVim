@@ -1,10 +1,10 @@
-![Alt text](https://github.com/ShizamDaGeek/UltraVim/blob/9e6b4cf670b2d6d1df7f171749878429124066cc/Images/UltraVim%20Logo.png)
+![Alt text](https://github.com/ShizamDaGeek/UltraVim/blob/9a967996227864aea059afb5150bc8a3e2a40b72/Images/UltraVim%20Logo.png)
 
 
-                    *----------------------------------------------------*
-                    |                     Hello World!                   |
-                    |This is a computer software is made by ShizamDa_Geek|
-                    .----------------------------------------------------.
+                        *----------------------------------------------------*
+                        |                     Hello World!                   |
+                        |This is a computer software is made by ShizamDa_Geek|
+                        .----------------------------------------------------.
 
 # Info
 what is UltraVim?
